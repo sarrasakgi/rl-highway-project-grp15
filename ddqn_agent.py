@@ -1,5 +1,9 @@
 """
-dqn_agent.py : DQN agent with target network and epsilon-greedy policy.
+ddqn_agent.py : Double DQN agent with target network and epsilon-greedy policy.
+
+The only difference from DQNAgent is in the target computation inside update():
+  DQN:  q_next = target_net(s').max()          (same net selects and evaluates)
+  DDQN: q_next = target_net(s').gather(q_net(s').argmax())  (split selection/evaluation)
 """
 
 import copy
@@ -12,7 +16,7 @@ from network import QNetwork
 from replay_buffer import ReplayBuffer
 
 
-class DQNAgent:
+class DDQNAgent:
 
     def __init__(
         self,
@@ -93,9 +97,10 @@ class DQNAgent:
         # Current Q-values for taken actions
         q_pred = self.q_net(states_t).gather(1, actions_t)
 
-        # Target Q-values (no gradient)
+        # Double DQN target: main net selects best action, target net evaluates it
         with torch.no_grad():
-            q_next = self.target_net(next_states_t).max(dim=1, keepdim=True).values
+            best_actions = self.q_net(next_states_t).argmax(dim=1, keepdim=True)
+            q_next = self.target_net(next_states_t).gather(1, best_actions)
             q_target = rewards_t + self.gamma * q_next * (1.0 - dones_t)
 
         loss = self.loss_fn(q_pred, q_target)
@@ -119,7 +124,7 @@ class DQNAgent:
         return loss_val
 
     # Persistence
-   
+
     def save(self, path: str):
         torch.save(
             {
