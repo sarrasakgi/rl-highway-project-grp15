@@ -1,0 +1,205 @@
+=================================================================
+  FAILURE ANALYSIS REPORT  —  SARSA  (seeds 0-4 pooled)
+=================================================================
+  Crashes  : 3 / 250  (1.2%)
+  Successes: 247 / 250  (98.8%)
+
+  Crash timing : mean=10.3 steps, min=5, max=18
+  Early crashes (≤10 steps): 2 (67%)
+
+  Last action before crash:
+    SLOWER          3  (100%)
+    LANE_LEFT       0  (0%)
+    IDLE            0  (0%)
+    LANE_RIGHT      0  (0%)
+    FASTER          0  (0%)
+
+  Mean reward — crashes  : 6.364
+  Mean reward — successes: 20.455
+  Reward gap             : 14.091
+=================================================================
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  REINFORCE  (seeds 0-4 pooled)
+=================================================================
+  Crashes  : 3 / 250  (1.2%)
+  Successes: 247 / 250  (98.8%)
+
+  Crash timing : mean=10.3 steps, min=5, max=18
+  Early crashes (≤10 steps): 2 (67%)
+
+  Last action before crash:
+    SLOWER          3  (100%)
+    LANE_LEFT       0  (0%)
+    IDLE            0  (0%)
+    LANE_RIGHT      0  (0%)
+    FASTER          0  (0%)
+
+  Mean reward — crashes  : 6.364
+  Mean reward — successes: 20.455
+  Reward gap             : 14.091
+=================================================================
+
+=================================================================
+  SARSA  — per-seed breakdown
+=================================================================
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  SARSA · seed 0
+=================================================================
+  Crashes  : 0 / 50  (0.0%)
+  Successes: 50 / 50  (100.0%)
+  No failures — very robust agent!
+
+  =================================================================
+  FAILURE ANALYSIS REPORT  —  SARSA · seed 1
+=================================================================
+  Crashes  : 1 / 50  (2.0%)
+  Successes: 49 / 50  (98.0%)
+
+  Crash timing : mean=18.0 steps, min=18, max=18
+  Early crashes (≤10 steps): 0 (0%)
+
+  Last action before crash:
+    SLOWER          1  (100%)
+    LANE_LEFT       0  (0%)
+    IDLE            0  (0%)
+    LANE_RIGHT      0  (0%)
+    FASTER          0  (0%)
+
+  Mean reward — crashes  : 11.591
+  Mean reward — successes: 20.455
+  Reward gap             : 8.864
+=================================================================
+
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  SARSA · seed 2
+=================================================================
+  Crashes  : 1 / 50  (2.0%)
+  Successes: 49 / 50  (98.0%)
+
+  Crash timing : mean=5.0 steps, min=5, max=5
+  Early crashes (≤10 steps): 1 (100%)
+
+  Last action before crash:
+    SLOWER          1  (100%)
+    LANE_LEFT       0  (0%)
+    IDLE            0  (0%)
+    LANE_RIGHT      0  (0%)
+    FASTER          0  (0%)
+
+  Mean reward — crashes  : 2.727
+  Mean reward — successes: 20.455
+  Reward gap             : 17.727
+=================================================================
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  SARSA · seed 3
+=================================================================
+  Crashes  : 0 / 50  (0.0%)
+  Successes: 50 / 50  (100.0%)
+  No failures — very robust agent!
+
+  =================================================================
+  FAILURE ANALYSIS REPORT  —  SARSA · seed 4
+=================================================================
+  Crashes  : 1 / 50  (2.0%)
+  Successes: 49 / 50  (98.0%)
+
+  Crash timing : mean=8.0 steps, min=8, max=8
+  Early crashes (≤10 steps): 1 (100%)
+
+  Last action before crash:
+    SLOWER          1  (100%)
+    LANE_LEFT       0  (0%)
+    IDLE            0  (0%)
+    LANE_RIGHT      0  (0%)
+    FASTER          0  (0%)
+
+  Mean reward — crashes  : 4.773
+  Mean reward — successes: 20.455
+  Reward gap             : 15.682
+=================================================================
+
+=================================================================
+  REINFORCE  — per-seed breakdown
+=================================================================
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  REINFORCE · seed 0
+=================================================================
+  Crashes  : 0 / 50  (0.0%)
+  Successes: 50 / 50  (100.0%)
+  No failures — very robust agent!
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  REINFORCE · seed 1
+=================================================================
+  Crashes  : 1 / 50  (2.0%)
+  Successes: 49 / 50  (98.0%)
+
+  Crash timing : mean=18.0 steps, min=18, max=18
+  Early crashes (≤10 steps): 0 (0%)
+
+  Last action before crash:
+    SLOWER          1  (100%)
+    LANE_LEFT       0  (0%)
+    IDLE            0  (0%)
+    LANE_RIGHT      0  (0%)
+    FASTER          0  (0%)
+
+  Mean reward — crashes  : 11.591
+  Mean reward — successes: 20.455
+  Reward gap             : 8.864
+=================================================================
+
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  REINFORCE · seed 2
+=================================================================
+  Crashes  : 1 / 50  (2.0%)
+  Successes: 49 / 50  (98.0%)
+
+  Crash timing : mean=5.0 steps, min=5, max=5
+  Early crashes (≤10 steps): 1 (100%)
+
+  Last action before crash:
+    SLOWER          1  (100%)
+    LANE_LEFT       0  (0%)
+    IDLE            0  (0%)
+    LANE_RIGHT      0  (0%)
+    FASTER          0  (0%)
+
+  Mean reward — crashes  : 2.727
+  Mean reward — successes: 20.455
+  Reward gap             : 17.727
+=================================================================
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  REINFORCE · seed 3
+=================================================================
+  Crashes  : 0 / 50  (0.0%)
+  Successes: 50 / 50  (100.0%)
+  No failures — very robust agent!
+
+=================================================================
+  FAILURE ANALYSIS REPORT  —  REINFORCE · seed 4
+=================================================================
+  Crashes  : 1 / 50  (2.0%)
+  Successes: 49 / 50  (98.0%)
+
+  Crash timing : mean=8.0 steps, min=8, max=8
+  Early crashes (≤10 steps): 1 (100%)
+
+  Last action before crash:
+    SLOWER          1  (100%)
+    LANE_LEFT       0  (0%)
+    IDLE            0  (0%)
+    LANE_RIGHT      0  (0%)
+    FASTER          0  (0%)
+
+  Mean reward — crashes  : 4.773
+  Mean reward — successes: 20.455
+  Reward gap             : 15.682
+=================================================================
