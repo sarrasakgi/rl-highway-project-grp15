@@ -181,12 +181,16 @@ def evaluate(agent: DQNAgent, n_episodes: int = EVAL_EPISODES, seed: int = 42) -
     agent.eps = 0.0  # greedy
 
     rewards = []
+    ep_lengths = []
+    ep_speeds = []
     collision_count = 0
 
     for ep in range(n_episodes):
         obs, _ = env.reset(seed=seed + ep)
         obs = flatten_obs(obs)
         ep_reward = 0.0
+        ep_len = 0
+        step_speeds = []
         done = False
         crashed = False
 
@@ -195,11 +199,15 @@ def evaluate(agent: DQNAgent, n_episodes: int = EVAL_EPISODES, seed: int = 42) -
             next_obs, reward, terminated, truncated, info = env.step(action)
             obs = flatten_obs(next_obs)
             ep_reward += reward
+            ep_len += 1
+            step_speeds.append(info.get("speed", float("nan")))
             done = terminated or truncated
             if info.get("crashed", False):
                 crashed = True
 
         rewards.append(ep_reward)
+        ep_lengths.append(ep_len)
+        ep_speeds.append(float(np.nanmean(step_speeds)))
         if crashed:
             collision_count += 1
 
@@ -212,6 +220,8 @@ def evaluate(agent: DQNAgent, n_episodes: int = EVAL_EPISODES, seed: int = 42) -
         "min":  float(np.min(rewards)),
         "max":  float(np.max(rewards)),
         "collision_rate": collision_count / n_episodes,
+        "mean_length": float(np.mean(ep_lengths)),
+        "mean_speed": float(np.nanmean(ep_speeds)),
         "n_episodes": n_episodes,
         "rewards": rewards,
     }
@@ -301,6 +311,90 @@ def print_eval_table(eval_results: dict):
         )
 
 
+def print_agent_table(agent_name: str, eval_results: dict):
+    """Print evaluation table matching the notebook format (Agent/Seed/Mean Return/Std/Collision%/Ep.Length/Speed)."""
+    print(f"\n{'Agent':<12} {'Seed':>5} {'Mean Return':>13} {'Std':>8} {'Collision%':>12} {'Ep. Length':>12} {'Speed':>8}")
+    print("-" * 65)
+    for seed, res in eval_results.items():
+        print(
+            f"{agent_name:<12} {seed:>5} {res['mean']:>13.3f} "
+            f"{res['std']:>8.3f} {res['collision_rate']*100:>11.1f}% "
+            f"{res.get('mean_length', float('nan')):>12.1f} "
+            f"{res.get('mean_speed', float('nan')):>8.2f}"
+        )
+
+
+def save_eval_results(eval_results: dict, checkpoint_used: str, results_dir: str = RESULTS_DIR):
+    """Save eval results to JSON and a bar-chart figure."""
+    os.makedirs(results_dir, exist_ok=True)
+    seeds = list(eval_results.keys())
+
+    # JSON
+    payload = {
+        "checkpoint": checkpoint_used,
+        "n_episodes_per_seed": EVAL_EPISODES,
+        "eval_seeds": seeds,
+        "results": {
+            str(s): {
+                k: v for k, v in r.items() if k != "rewards"
+            }
+            for s, r in eval_results.items()
+        },
+    }
+    json_path = os.path.join(results_dir, "dqn_eval_by_seed.json")
+    with open(json_path, "w") as f:
+        json.dump(payload, f, indent=2)
+    print(f"Saved eval results → {json_path}")
+
+    # Figure
+    means       = [eval_results[s]["mean"]               for s in seeds]
+    stds        = [eval_results[s]["std"]                for s in seeds]
+    collisions  = [eval_results[s]["collision_rate"] * 100 for s in seeds]
+    lengths     = [eval_results[s]["mean_length"]         for s in seeds]
+
+    x = np.arange(len(seeds))
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    fig.suptitle(
+        f"DQN — Robustness by Seed ({EVAL_EPISODES} episodes each)\n"
+        f"checkpoint: {os.path.basename(checkpoint_used)}",
+        fontsize=12, fontweight="bold",
+    )
+
+    axes[0].bar(x, means, yerr=stds, color="crimson", capsize=5, alpha=0.85)
+    for i, (m, s) in enumerate(zip(means, stds)):
+        axes[0].text(i, m + s + 0.3, f"{m:.2f}", ha="center", fontsize=9)
+    axes[0].set_title("Mean Return ± Std")
+    axes[0].set_xticks(x)
+    axes[0].set_xticklabels([f"seed {s}" for s in seeds])
+    axes[0].set_ylabel("Return")
+    axes[0].grid(True, alpha=0.3, axis="y")
+
+    axes[1].bar(x, collisions, color="crimson", alpha=0.85)
+    for i, c in enumerate(collisions):
+        axes[1].text(i, c + 1, f"{c:.0f}%", ha="center", fontsize=9)
+    axes[1].set_title("Collision Rate (%)")
+    axes[1].set_xticks(x)
+    axes[1].set_xticklabels([f"seed {s}" for s in seeds])
+    axes[1].set_ylabel("% episodes with collision")
+    axes[1].set_ylim(0, 110)
+    axes[1].grid(True, alpha=0.3, axis="y")
+
+    axes[2].bar(x, lengths, color="crimson", alpha=0.85)
+    for i, l in enumerate(lengths):
+        axes[2].text(i, l + 0.3, f"{l:.1f}", ha="center", fontsize=9)
+    axes[2].set_title("Mean Episode Length (steps)")
+    axes[2].set_xticks(x)
+    axes[2].set_xticklabels([f"seed {s}" for s in seeds])
+    axes[2].set_ylabel("Steps")
+    axes[2].grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+    fig_path = os.path.join(results_dir, "dqn_eval_by_seed.png")
+    plt.savefig(fig_path, dpi=150)
+    print(f"Saved figure         → {fig_path}")
+    plt.close()
+
+
 # Main
 
 def main():
@@ -322,11 +416,55 @@ def main():
         action="store_true",
         help="Train over all EVAL_SEEDS and produce combined plots",
     )
+    parser.add_argument(
+        "--eval_all_seeds",
+        action="store_true",
+        help="Evaluate best checkpoints for all seeds (no training)",
+    )
+    parser.add_argument(
+        "--best_checkpoint",
+        type=str,
+        default=None,
+        help="Single checkpoint to evaluate on ALL seeds (fair comparison with baselines). "
+             "Use with --eval_all_seeds.",
+    )
     args = parser.parse_args()
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
-    if args.eval_only:
+    if args.eval_all_seeds:
+        # Evaluate checkpoints on all seeds — no training
+        
+        env = make_env(0)
+        obs, _ = env.reset()
+        obs_dim = flatten_obs(obs).shape[0]
+        n_actions = env.action_space.n
+        env.close()
+
+        single_ckpt = args.best_checkpoint  # None → per-seed mode
+        if single_ckpt:
+            assert os.path.exists(single_ckpt), f"Checkpoint not found: {single_ckpt}"
+            agent = DQNAgent(obs_dim=obs_dim, n_actions=n_actions, **HPARAMS)
+            agent.load(single_ckpt)
+            print(f"Loaded {single_ckpt} (single model, evaluated on all seeds)")
+
+        eval_results = {}
+        for seed in EVAL_SEEDS:
+            if single_ckpt:
+                ckpt_used = single_ckpt
+            else:
+                ckpt_used = os.path.join(CHECKPOINT_DIR, f"dqn_seed{seed}_best.pt")
+                assert os.path.exists(ckpt_used), f"Checkpoint not found: {ckpt_used}"
+                agent = DQNAgent(obs_dim=obs_dim, n_actions=n_actions, **HPARAMS)
+                agent.load(ckpt_used)
+                print(f"Loaded {ckpt_used}")
+            eval_results[seed] = evaluate(agent, n_episodes=EVAL_EPISODES, seed=seed)
+
+        checkpoint_label = single_ckpt or "per-seed best checkpoints"
+        print_agent_table("DQN", eval_results)
+        save_eval_results(eval_results, checkpoint_label)
+
+    elif args.eval_only:
         # Evaluation-only mode 
         assert args.checkpoint, "Provide --checkpoint for eval_only mode"
         env = make_env(args.seed)
