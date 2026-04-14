@@ -1,0 +1,3 @@
+variant,label,mean_reward,collision_rate,crash_free_rate,mean_speed,mean_lane_changes,mean_episode_length
+vanilla,Vanilla DQN,11.09,1.0,0.0,27.411,1.9,12.76
+reward_shaped,Reward-Shaped DQN,17.418,0.34,0.66,22.223,4.0,24.14
